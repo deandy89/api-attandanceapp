@@ -1,60 +1,76 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const connection = require('./db.js');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-let employees = []; // In-memory database for demonstration
-
 // Create a new employee
 app.post('/employees', (req, res) => {
   const { emp_id, emp_name, emp_nik } = req.body;
-  employees.push({ emp_id, emp_name, emp_nik });
-  res.status(201).json({ message: 'Employee created successfully' });
+  const sql = 'INSERT INTO employees (emp_id, emp_name, emp_nik) VALUES (?, ?, ?)';
+  connection.query(sql, [emp_id, emp_name, emp_nik], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to create employee', error: err });
+    }
+    res.status(201).json({ message: 'Employee created successfully', data: result });
+  });
 });
 
 // Read all employees
 app.get('/employees', (req, res) => {
-  res.json(employees);
+  const sql = 'SELECT * FROM employees';
+  connection.query(sql, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to fetch employees', error: err });
+    }
+    res.json(results);
+  });
 });
 
 // Read a specific employee by emp_id
 app.get('/employees/:emp_id', (req, res) => {
-  const employee = employees.find(e => e.emp_id === parseInt(req.params.emp_id));
-  if (employee) {
-    res.json(employee);
-  } else {
-    res.status(404).json({ message: 'Employee not found' });
-  }
+  const sql = 'SELECT * FROM employees WHERE emp_id = ?';
+  connection.query(sql, [req.params.emp_id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to fetch employee', error: err });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    res.json(results[0]);
+  });
 });
 
 // Update a specific employee by emp_id
 app.put('/employees/:emp_id', (req, res) => {
-  const { emp_id } = req.params;
   const { emp_name, emp_nik } = req.body;
-  const employeeIndex = employees.findIndex(e => e.emp_id === parseInt(emp_id));
-
-  if (employeeIndex !== -1) {
-    employees[employeeIndex] = { emp_id: parseInt(emp_id), emp_name, emp_nik };
+  const sql = 'UPDATE employees SET emp_name = ?, emp_nik = ? WHERE emp_id = ?';
+  connection.query(sql, [emp_name, emp_nik, req.params.emp_id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to update employee', error: err });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
     res.json({ message: 'Employee updated successfully' });
-  } else {
-    res.status(404).json({ message: 'Employee not found' });
-  }
+  });
 });
 
 // Delete a specific employee by emp_id
 app.delete('/employees/:emp_id', (req, res) => {
-  const { emp_id } = req.params;
-  const employeeIndex = employees.findIndex(e => e.emp_id === parseInt(emp_id));
-
-  if (employeeIndex !== -1) {
-    employees.splice(employeeIndex, 1);
+  const sql = 'DELETE FROM employees WHERE emp_id = ?';
+  connection.query(sql, [req.params.emp_id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to delete employee', error: err });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
     res.json({ message: 'Employee deleted successfully' });
-  } else {
-    res.status(404).json({ message: 'Employee not found' });
-  }
+  });
 });
 
 app.listen(port, () => {
