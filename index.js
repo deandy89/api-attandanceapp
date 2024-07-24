@@ -8,9 +8,12 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 // Create a new employee
+app.get('/',(req,res) => {
+    res.send('ok');
+});
 app.post('/employees', (req, res) => {
   const { emp_id, emp_name, emp_nik } = req.body;
-  const sql = 'INSERT INTO employees (emp_id, emp_name, emp_nik) VALUES (?, ?, ?)';
+  const sql = 'INSERT INTO hr_employee (emp_id, emp_name, emp_nik) VALUES (?, ?, ?)';
   connection.query(sql, [emp_id, emp_name, emp_nik], (err, result) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to create employee', error: err });
@@ -21,7 +24,7 @@ app.post('/employees', (req, res) => {
 
 // Read all employees
 app.get('/employees', (req, res) => {
-  const sql = 'SELECT * FROM employees';
+  const sql = 'SELECT * FROM employee';
   connection.query(sql, (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to fetch employees', error: err });
@@ -32,7 +35,7 @@ app.get('/employees', (req, res) => {
 
 // Read a specific employee by emp_id
 app.get('/employees/:emp_id', (req, res) => {
-  const sql = 'SELECT * FROM employees WHERE emp_id = ?';
+  const sql = 'SELECT * FROM employee WHERE emp_id = ?';
   connection.query(sql, [req.params.emp_id], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to fetch employee', error: err });
@@ -47,7 +50,7 @@ app.get('/employees/:emp_id', (req, res) => {
 // Update a specific employee by emp_id
 app.put('/employees/:emp_id', (req, res) => {
   const { emp_name, emp_nik } = req.body;
-  const sql = 'UPDATE employees SET emp_name = ?, emp_nik = ? WHERE emp_id = ?';
+  const sql = 'UPDATE hr_employee SET emp_name = ?, emp_nik = ? WHERE emp_id = ?';
   connection.query(sql, [emp_name, emp_nik, req.params.emp_id], (err, result) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to update employee', error: err });
@@ -61,7 +64,7 @@ app.put('/employees/:emp_id', (req, res) => {
 
 // Delete a specific employee by emp_id
 app.delete('/employees/:emp_id', (req, res) => {
-  const sql = 'DELETE FROM employees WHERE emp_id = ?';
+  const sql = 'DELETE FROM hr_employee WHERE emp_id = ?';
   connection.query(sql, [req.params.emp_id], (err, result) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to delete employee', error: err });
