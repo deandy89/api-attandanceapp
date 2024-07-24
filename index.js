@@ -7,7 +7,9 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(bodyParser.json());
-
+app.get('/',(res) => {
+    res.send('WELCOME TO MY API');
+})
 // Create a new employee
 app.post('/employees', (req, res) => {
   const { emp_id, emp_name, emp_nik } = req.body;
