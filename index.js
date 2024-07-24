@@ -24,7 +24,7 @@ app.post('/employees', (req, res) => {
 
 // Read all employees
 app.get('/employees', (req, res) => {
-  const sql = 'SELECT * FROM employee';
+  const sql = 'SELECT * FROM hr_employee';
   connection.query(sql, (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to fetch employees', error: err });
